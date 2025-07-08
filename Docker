@@ -1,9 +1,19 @@
+# -------- STAGE 1: Build the application --------
+FROM maven:3.9.6-eclipse-temurin-17 AS build
+
+WORKDIR /app
+
+# Copy all files and build
+COPY . .
+RUN mvn clean package -DskipTests
+
+# -------- STAGE 2: Create runtime image --------
 FROM eclipse-temurin:17-jdk-alpine
 
 WORKDIR /app
 
-# Wildcard will work only if there's a single JAR in target/
-COPY target/*.jar app.jar
+# Copy the jar from the previous stage
+COPY --from=build /app/target/*.jar app.jar
 
 EXPOSE 8080
 

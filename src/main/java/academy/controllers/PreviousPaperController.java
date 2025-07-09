@@ -31,6 +31,7 @@ public class PreviousPaperController {
 
     @GetMapping("/{examSlug}")
     public ResponseEntity<List<PreviousPaper>> getPapersByExam(@PathVariable String examSlug) {
+    	System.err.println("phdiehdwe    :"+examSlug);
         return ResponseEntity.ok(paperRepo.findByExamSlug(examSlug));
     }
 }

@@ -53,10 +53,9 @@ public class ExamQuestionService {
 
     public List<SectionWiseQuestionResponse> getRandomQuestionsBySyllabus(String courseName) {
         Optional<Syllabus> optionalSyllabus = syllabusRepository.findByCourseName(courseName);
-        if (optionalSyllabus.isPresent()) {
+        if (!optionalSyllabus.isPresent()) {
             return Collections.emptyList();
         }
-
         Syllabus syllabus = optionalSyllabus.get();
         List<SectionWiseQuestionResponse> result = new ArrayList<>();
 

@@ -2,11 +2,12 @@ package academy.models;
 
 import java.time.LocalDateTime;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import javax.*;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
 
 @Entity
 public class ExamQuestion {
@@ -35,8 +36,21 @@ public class ExamQuestion {
 
     @Column(nullable = false)
     private String correctOption; // Stores 'A', 'B', 'C', or 'D'
+    
+    @Column(nullable = false)
+    private String topic; // Stores 'A', 'B', 'C', or 'D'
 
     private LocalDateTime createdAt = LocalDateTime.now();
+
+    
+    
+	public String getTopic() {
+		return topic;
+	}
+
+	public void setTopic(String topic) {
+		this.topic = topic;
+	}
 
 	public Long getId() {
 		return id;
@@ -105,8 +119,9 @@ public class ExamQuestion {
 	
 
 	public ExamQuestion(Long id, String courseName, String questionText, String optionA, String optionB, String optionC,
-			String optionD, String correctOption, LocalDateTime createdAt) {
+			String optionD, String correctOption, LocalDateTime createdAt,String topic) {
 		super();
+		this.topic=topic;
 		this.id = id;
 		this.courseName = courseName;
 		this.questionText = questionText;

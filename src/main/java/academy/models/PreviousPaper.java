@@ -1,13 +1,13 @@
 package academy.models;
 
 
-import jakarta.persistence.*;
+import javax.persistence.*;
 
 @Entity
 public class PreviousPaper {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private String id;
 
     private String examSlug; // Link to EntranceExam via slug

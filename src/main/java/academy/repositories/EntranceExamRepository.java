@@ -8,4 +8,5 @@ import academy.models.EntranceExam;
 
 public interface EntranceExamRepository extends JpaRepository<EntranceExam, String> {
     List<EntranceExam> findByFeatured(boolean featured);
+    
 }

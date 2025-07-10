@@ -2,7 +2,7 @@ package academy.models;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 
-import jakarta.persistence.*;
+import javax.persistence.*;
 
 @Entity
 public class SyllabusSection {

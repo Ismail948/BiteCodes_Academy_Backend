@@ -1,8 +1,13 @@
 package academy.models;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToMany;
+import javax.persistence.ManyToOne;
 
-import jakarta.persistence.*;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 
 @Entity
 public class Course {
@@ -14,9 +19,10 @@ public class Course {
     private String examSlug;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "university_slug")
+    @JoinColumn(name = "university_slug", referencedColumnName = "slug")
     @JsonBackReference
     private University university;
+
 
 
     // Constructors

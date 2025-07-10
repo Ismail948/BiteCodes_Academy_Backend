@@ -3,9 +3,9 @@ package academy.models;
 import java.time.LocalDate;
 import java.util.List;
 
-import jakarta.persistence.ElementCollection;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
+import javax.persistence.ElementCollection;
+import javax.persistence.Entity;
+import javax.persistence.Id;
 
 @Entity
 public class EntranceExam {
@@ -22,6 +22,7 @@ public class EntranceExam {
 	private LocalDate applicationDeadline;
 
 	// Additional fields from ExamData interface
+    @ElementCollection
 	private List<String> subjects;
 	private Boolean featured;
 	private String duration;
@@ -41,11 +42,15 @@ public class EntranceExam {
 	private Integer scFees;
 
 	// Syllabus topics (simplified as strings)
+    @ElementCollection
 	private List<String> physicsTopics;
+    @ElementCollection
 	private List<String> chemistryTopics;
+    @ElementCollection
 	private List<String> mathematicsTopics;
 
 	// Preparation Tips
+    @ElementCollection
 	private List<String> preparationTips;
     
 

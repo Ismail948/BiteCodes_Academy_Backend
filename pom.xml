@@ -27,11 +27,6 @@
     </properties>
 
     <dependencies>
-        <!-- Spring Boot Starter Dependencies -->
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-web</artifactId>
-        </dependency>
 
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -134,6 +129,17 @@
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+  <groupId>org.springframework.boot</groupId>
+  <artifactId>spring-boot-starter-web</artifactId>
+  <exclusions>
+    <exclusion>
+      <groupId>org.webjars</groupId>
+      <artifactId>webjars-locator-core</artifactId>
+    </exclusion>
+  </exclusions>
+</dependency>
+
     </dependencies>
 
     <build>

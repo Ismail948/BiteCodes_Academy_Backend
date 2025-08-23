@@ -32,19 +32,6 @@ public class ExamController {
         return examQuestionService.getRandomQuestions(courseId, 5);
     }
 
-//    @PostMapping("/submit")
-//    public ExamAttempt submitExam(@RequestBody ExamAttemptRequest request) {
-//        double score = examQuestionService.evaluateExam(request.getAnswers());
-//        boolean passed = score >= 80; // Example passing criteria
-//        if(!(score>=0 && score<=100)) {
-//        	score=0;
-//        }
-//        score=Math.round(score);
-//        ExamAttempt attempt = new ExamAttempt(null, request.getUserId(), request.getCourseName(), score, passed, LocalDateTime.now());
-//        ExamAttempt savedAttempt = examAttemptService.saveAttempt(attempt);
-//        
-//        return savedAttempt; // Return the saved attempt with ID
-//    }
     @PostMapping("/submit")
     public ResponseEntity<?> submitExam(@RequestBody ExamAttemptRequest request) {
         try {

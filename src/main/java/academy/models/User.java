@@ -1,10 +1,30 @@
 package academy.models;
 
 import java.time.LocalDateTime;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
 
-import javax.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToMany;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
 
-import java.util.*;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
 
 @Entity
@@ -24,6 +44,8 @@ public class User {
 	@Column()
 	private String profileurl;
 	
+    @Size(min = 10, max = 15, message = "Phone number must be between 10 to 15 digits")
+    @Pattern(regexp = "^[0-9]{10,15}$", message = "Phone number must contain only digits")
     @Column(nullable = true, unique = true)
     private String phonenum;
 	
@@ -34,9 +56,9 @@ public class User {
 	@Column(nullable = true)
 	private String password;
 
-//	@Email
-//	@Column(nullable = false, unique = true)
-//	private String email;
+	@Email
+	@Column(nullable = false, unique = true)
+	private String email;
 
 	@Column(nullable = true)
 	private String role;
@@ -56,7 +78,7 @@ public class User {
 
 
 
-	public User(String username, Long id, String name, String profileurl, String phonenum, String state, String password, String role, boolean enabled, String otp, LocalDateTime otpExpiry, String bio, String timezone, String availability, LocalDateTime createdAt) {
+	public User(String username, Long id, String name, String profileurl, String phonenum, String state, String password, String email, String role, boolean enabled, String otp, LocalDateTime otpExpiry, String bio, String timezone, String availability, LocalDateTime createdAt) {
 		this.username = username;
 		this.id = id;
 		this.name = name;
@@ -64,7 +86,7 @@ public class User {
 		this.phonenum = phonenum;
 		this.state = state;
 		this.password = password;
-//		this.email = email;
+		this.email = email;
 		this.role = role;
 		this.enabled = enabled;
 		this.otp = otp;
@@ -135,6 +157,14 @@ public class User {
 		this.password = password;
 	}
 
+	public String getEmail() {
+		return email;
+	}
+
+	public void setEmail(String email) {
+		this.email = email;
+	}
+
 	public String getRole() {
 		return role;
 	}
@@ -167,9 +197,9 @@ public class User {
 		this.otpExpiry = otpExpiry;
 	}
 
-//	public Collection<? extends GrantedAuthority> getAuthorities() {
-//		return Collections.singletonList(new SimpleGrantedAuthority("ROLE_" + role));
-//	}
+	public Collection<? extends GrantedAuthority> getAuthorities() {
+		return Collections.singletonList(new SimpleGrantedAuthority("ROLE_" + role));
+	}
 
 	public String getBio() {
 		return bio;
@@ -201,11 +231,5 @@ public class User {
 
 	public void setCreatedAt(LocalDateTime createdAt) {
 		this.createdAt = createdAt;
-	}
-
-	
-
-	public void setSkillIds(List<Long> skillIds) {
-		// This is a transient setter for deserialization; actual skill setting is handled in controller
 	}
 }

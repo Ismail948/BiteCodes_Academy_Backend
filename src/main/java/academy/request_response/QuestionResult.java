@@ -1,6 +1,6 @@
 package academy.request_response;
 
-import javax.persistence.Embeddable;
+import jakarta.persistence.Embeddable;
 
 @Embeddable
 public class QuestionResult {

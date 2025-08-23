@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonManagedReference;
-import javax.persistence.*;
+import jakarta.persistence.*;
 
 @Entity
 public class SyllabusTopic {

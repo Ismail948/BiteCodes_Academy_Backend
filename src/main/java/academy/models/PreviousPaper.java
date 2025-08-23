@@ -1,7 +1,7 @@
 package academy.models;
 
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 
 @Entity
 public class PreviousPaper {

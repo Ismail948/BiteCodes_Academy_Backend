@@ -1,6 +1,6 @@
 package academy.models;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonManagedReference;

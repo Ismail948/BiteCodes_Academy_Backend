@@ -41,13 +41,6 @@ public class EntranceExam {
 	private Integer generalFees;
 	private Integer scFees;
 
-	// Syllabus topics (simplified as strings)
-    @ElementCollection
-	private List<String> physicsTopics;
-    @ElementCollection
-	private List<String> chemistryTopics;
-    @ElementCollection
-	private List<String> mathematicsTopics;
 
 	// Preparation Tips
     @ElementCollection
@@ -83,9 +76,6 @@ public class EntranceExam {
 		this.minMarks = minMarks;
 		this.generalFees = generalFees;
 		this.scFees = scFees;
-		this.physicsTopics = physicsTopics;
-		this.chemistryTopics = chemistryTopics;
-		this.mathematicsTopics = mathematicsTopics;
 		this.preparationTips = preparationTips;
 	}
 
@@ -383,47 +373,6 @@ public class EntranceExam {
 		this.scFees = scFees;
 	}
 
-
-
-
-	public List<String> getPhysicsTopics() {
-		return physicsTopics;
-	}
-
-
-
-
-	public void setPhysicsTopics(List<String> physicsTopics) {
-		this.physicsTopics = physicsTopics;
-	}
-
-
-
-
-	public List<String> getChemistryTopics() {
-		return chemistryTopics;
-	}
-
-
-
-
-	public void setChemistryTopics(List<String> chemistryTopics) {
-		this.chemistryTopics = chemistryTopics;
-	}
-
-
-
-
-	public List<String> getMathematicsTopics() {
-		return mathematicsTopics;
-	}
-
-
-
-
-	public void setMathematicsTopics(List<String> mathematicsTopics) {
-		this.mathematicsTopics = mathematicsTopics;
-	}
 
 
 

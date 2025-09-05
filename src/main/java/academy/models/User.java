@@ -1,20 +1,26 @@
 package academy.models;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Collection;
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.Pattern;
-import jakarta.validation.constraints.Size;
 import java.util.Collections;
+import java.util.List;
+
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToMany;
 import jakarta.persistence.Table;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
 
 
 @Entity
@@ -33,6 +39,16 @@ public class User {
 	
 	@Column()
 	private String profileurl;
+	
+	  // ✅ Purchased courses
+    @ManyToMany
+    @JoinTable(
+        name = "user_courses",
+        joinColumns = @JoinColumn(name = "user_id"),
+        inverseJoinColumns = @JoinColumn(name = "course_slug")
+    )
+    private List<Course> purchasedCourses = new ArrayList<>();
+    
 	
     @Size(min = 10, max = 15, message = "Phone number must be between 10 to 15 digits")
     @Pattern(regexp = "^[0-9]{10,15}$", message = "Phone number must contain only digits")
@@ -68,11 +84,26 @@ public class User {
 
 
 
-	public User(String username, Long id, String name, String profileurl, String phonenum, String state, String password, String email, String role, boolean enabled, String otp, LocalDateTime otpExpiry, String bio, String timezone, String availability, LocalDateTime createdAt) {
-		this.username = username;
+	
+
+	public List<Course> getPurchasedCourses() {
+		return purchasedCourses;
+	}
+
+	public void setPurchasedCourses(List<Course> purchasedCourses) {
+		this.purchasedCourses = purchasedCourses;
+	}
+
+	public User(Long id, String username, String name, String profileurl, List<Course> purchasedCourses,
+			@Size(min = 10, max = 15, message = "Phone number must be between 10 to 15 digits") @Pattern(regexp = "^[0-9]{10,15}$", message = "Phone number must contain only digits") String phonenum,
+			String state, String password, @Email String email, String role, boolean enabled, String otp,
+			LocalDateTime otpExpiry, String bio, String timezone, String availability, LocalDateTime createdAt) {
+		super();
 		this.id = id;
+		this.username = username;
 		this.name = name;
 		this.profileurl = profileurl;
+		this.purchasedCourses = purchasedCourses;
 		this.phonenum = phonenum;
 		this.state = state;
 		this.password = password;

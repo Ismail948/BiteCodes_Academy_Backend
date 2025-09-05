@@ -18,6 +18,8 @@ public class University {
     private String website;
     private String admissionLink;
 
+    private Double allCoursesPrice; 
+    
     @ElementCollection
     private List<String> examsAccepted;
 
@@ -89,8 +91,15 @@ public class University {
 	}
 	public University() {
 	}
+	public Double getAllCoursesPrice() {
+		return allCoursesPrice;
+	}
+	public void setAllCoursesPrice(Double allCoursesPrice) {
+		this.allCoursesPrice = allCoursesPrice;
+	}
 	public University(String slug, String name, String description, String location, int ranking, int established,
-			String website, String admissionLink, List<String> examsAccepted, List<Course> courses) {
+			String website, String admissionLink, Double allCoursesPrice, List<String> examsAccepted,
+			List<Course> courses) {
 		super();
 		this.slug = slug;
 		this.name = name;
@@ -100,9 +109,10 @@ public class University {
 		this.established = established;
 		this.website = website;
 		this.admissionLink = admissionLink;
+		this.allCoursesPrice = allCoursesPrice;
 		this.examsAccepted = examsAccepted;
 		this.courses = courses;
 	}
-
+	
     // other getters/setters omitted for brevity
 }

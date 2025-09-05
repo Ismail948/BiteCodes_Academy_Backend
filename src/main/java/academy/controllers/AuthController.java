@@ -2,9 +2,13 @@ package academy.controllers;
 
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -103,55 +107,119 @@ public class AuthController {
 
     
 
-    @PostMapping("/google-auth")
-    public ResponseEntity<?> googleAuth(@RequestBody Map<String, String> request) {
-        try {
-            String email = request.get("email");
-            String name = request.get("name");
-            String picture = request.get("picture");
-            String password = "Google";
-            String username = name;
+//    @PostMapping("/google-auth")
+//    public ResponseEntity<?> googleAuth(@RequestBody Map<String, String> request) {
+//        try {
+//            String email = request.get("email");
+//            String name = request.get("name");
+//            String picture = request.get("picture");
+//            String password = "Google";
+//            String username = name;
+//
+//            if (email == null) {
+//                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+//                        .body(Map.of("success", false, "message", "Google OAuth failed: Email is missing."));
+//            }
+//
+//            Optional<User> existingUser = userRepository.findByEmail(email);
+//            User user;
+//
+//            if (existingUser.isPresent()) {
+//                user = existingUser.get();
+//            } else {
+//                user = new User();
+//                user.setEmail(email);
+//                user.setName(name != null ? name : "Google User");
+//                user.setProfileurl(picture != null ? picture : "https://webcrumbs.cloud/placeholder");
+//                user.setUsername(email.split("@")[0]);
+//                user.setPassword(password);
+//                user.setRole("USER");
+//                user.setEnabled(true);
+//                userRepository.save(user);
+//            }
+//
+//            String jwtToken = jwtService.generateToken(user.getEmail(), user.getId());
+//            return ResponseEntity.ok(Map.of(
+//                    "success", true,
+//                    "message", "Google login successful",
+//                    "token", jwtToken,
+//                    "username", user.getUsername(),
+//                    "email", user.getEmail(),
+//                    "profileurl", user.getProfileurl(),
+//                    "userid", user.getId(),
+//                    "name", user.getName(),
+//                    "role",user.getRole()
+//            ));
+//        } catch (Exception e) {
+//            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+//                    .body(Map.of("success", false, "message", "Google OAuth failed: " + e.getMessage()));
+//        }
+//    }
 
-            if (email == null) {
+        @PostMapping("/google-auth")
+        public ResponseEntity<?> googleAuth(@RequestBody Map<String, String> request) {
+            try {
+                String email = request.get("email");
+                String name = request.get("name");
+                String picture = request.get("picture");
+                String password = "Google";
+
+                if (email == null) {
+                    return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                            .body(Map.of("success", false, "message", "Google OAuth failed: Email is missing."));
+                }
+
+                Optional<User> existingUser = userRepository.findByEmail(email);
+                User user;
+
+                if (existingUser.isPresent()) {
+                    user = existingUser.get();
+                } else {
+                    user = new User();
+                    user.setEmail(email);
+                    user.setName(name != null ? name : "Google User");
+                    user.setProfileurl(picture != null ? picture : "https://webcrumbs.cloud/placeholder");
+                    user.setUsername(email.split("@")[0]);
+                    user.setPassword(password);
+                    user.setRole("USER");
+                    user.setEnabled(true);
+                    userRepository.save(user);
+                }
+
+                // 🔹 Get purchased courses (safe for Java 8+)
+                List<Map<String, Object>> purchasedCourses = new ArrayList<>();
+                if (user.getPurchasedCourses() != null) {
+                    purchasedCourses = user.getPurchasedCourses().stream()
+                        .map(course -> {
+                            Map<String, Object> map = new HashMap<>();
+                            map.put("name", course.getName());
+                            map.put("slug", course.getExamSlug());
+                            map.put("price", course.getPrice());
+                            return map;
+                        })
+                        .collect(Collectors.toList());
+                }
+
+                String jwtToken = jwtService.generateToken(user.getEmail(), user.getId());
+                return ResponseEntity.ok(Map.of(
+                        "success", true,
+                        "message", "Google login successful",
+                        "token", jwtToken,
+                        "username", user.getUsername(),
+                        "email", user.getEmail(),
+                        "profileurl", user.getProfileurl(),
+                        "userid", user.getId(),
+                        "name", user.getName(),
+                        "role", user.getRole(),
+                        "purchasedCourses", purchasedCourses
+                ));
+            } catch (Exception e) {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                        .body(Map.of("success", false, "message", "Google OAuth failed: Email is missing."));
+                        .body(Map.of("success", false, "message", "Google OAuth failed: " + e.getMessage()));
             }
-
-            Optional<User> existingUser = userRepository.findByEmail(email);
-            User user;
-
-            if (existingUser.isPresent()) {
-                user = existingUser.get();
-            } else {
-                user = new User();
-                user.setEmail(email);
-                user.setName(name != null ? name : "Google User");
-                user.setProfileurl(picture != null ? picture : "https://webcrumbs.cloud/placeholder");
-                user.setUsername(email.split("@")[0]);
-                user.setPassword(password);
-                user.setRole("USER");
-                user.setEnabled(true);
-                userRepository.save(user);
-            }
-
-            String jwtToken = jwtService.generateToken(user.getEmail(), user.getId());
-            return ResponseEntity.ok(Map.of(
-                    "success", true,
-                    "message", "Google login successful",
-                    "token", jwtToken,
-                    "username", user.getUsername(),
-                    "email", user.getEmail(),
-                    "profileurl", user.getProfileurl(),
-                    "userid", user.getId(),
-                    "name", user.getName(),
-                    "role",user.getRole()
-            ));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(Map.of("success", false, "message", "Google OAuth failed: " + e.getMessage()));
         }
-    }
 
+        
     @PostMapping("/register")
     public ResponseEntity<String> registerUser(@RequestBody User user) {
         try {

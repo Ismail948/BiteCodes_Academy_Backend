@@ -22,19 +22,36 @@ public class Course {
     @JoinColumn(name = "university_slug", referencedColumnName = "slug")
     @JsonBackReference
     private University university;
+    private Double price; // ✅ Add price
 
 
 
     // Constructors
     public Course() {}
-    public Course(String slug, String name, String description, String examSlug) {
-        this.slug = slug;
-        this.name = name;
-        this.description = description;
-        this.examSlug = examSlug;
-    }
 
-    // Getters & Setters
+
+    public Course(String slug, String name, String description, String examSlug, University university, Double price) {
+		super();
+		this.slug = slug;
+		this.name = name;
+		this.description = description;
+		this.examSlug = examSlug;
+		this.university = university;
+		this.price = price;
+	}
+
+
+	public Double getPrice() {
+		return price;
+	}
+
+
+	public void setPrice(Double price) {
+		this.price = price;
+	}
+
+
+	// Getters & Setters
     public String getSlug() { return slug; }
     public void setSlug(String slug) { this.slug = slug; }
 

@@ -14,8 +14,8 @@ import academy.repositories.PaymentRepository;
 @Service
 public class PaymentService {
 
-    private static final String RAZORPAY_KEY = "rzp_test_mQf2cASnEwehms";
-    private static final String RAZORPAY_SECRET = "unqMoyk2PrStZ0RxViTIrOCa";
+    private static final String RAZORPAY_KEY = "rzp_test_RDc7AGHUscKt8H";
+    private static final String RAZORPAY_SECRET = "fDIjCY5SYvPmNrNBX7FDFZmV";
 
     private final PaymentRepository paymentRepository;
 

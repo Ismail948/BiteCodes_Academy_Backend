@@ -17,6 +17,8 @@ public class University {
     private int established;
     private String website;
     private String admissionLink;
+    
+    private String mapLocation;
 
     private Double allCoursesPrice; 
     
@@ -97,9 +99,15 @@ public class University {
 	public void setAllCoursesPrice(Double allCoursesPrice) {
 		this.allCoursesPrice = allCoursesPrice;
 	}
+	public String getMapLocation() {
+		return mapLocation;
+	}
+	public void setMapLocation(String mapLocation) {
+		this.mapLocation = mapLocation;
+	}
 	public University(String slug, String name, String description, String location, int ranking, int established,
-			String website, String admissionLink, Double allCoursesPrice, List<String> examsAccepted,
-			List<Course> courses) {
+			String website, String admissionLink, String mapLocation, Double allCoursesPrice,
+			List<String> examsAccepted, List<Course> courses) {
 		super();
 		this.slug = slug;
 		this.name = name;
@@ -109,10 +117,12 @@ public class University {
 		this.established = established;
 		this.website = website;
 		this.admissionLink = admissionLink;
+		this.mapLocation = mapLocation;
 		this.allCoursesPrice = allCoursesPrice;
 		this.examsAccepted = examsAccepted;
 		this.courses = courses;
 	}
+	
 	
     // other getters/setters omitted for brevity
 }

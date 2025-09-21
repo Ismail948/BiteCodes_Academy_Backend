@@ -1,6 +1,8 @@
 package academy.models;
 
 import java.time.LocalDateTime;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -15,242 +17,214 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
-import jakarta.persistence.JoinTable;
-import jakarta.persistence.ManyToMany;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
-
 @Entity
 @Table(name = "users")
 public class User {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
-	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Long id;
+    @Column(nullable = true, unique = true)
+    private String username;
 
-	@Column(nullable = true, unique = true)
-	private String username;
-	
-	@Column()
-	private String name;
-	
-	@Column()
-	private String profileurl;
-	
-	  // ✅ Purchased courses
-    @ManyToMany
-    @JoinTable(
-        name = "user_courses",
-        joinColumns = @JoinColumn(name = "user_id"),
-        inverseJoinColumns = @JoinColumn(name = "course_slug")
-    )
-    private List<Course> purchasedCourses = new ArrayList<>();
-    
-	
+    @Column()
+    private String name;
+
+    @Column()
+    private String profileurl;
+
     @Size(min = 10, max = 15, message = "Phone number must be between 10 to 15 digits")
     @Pattern(regexp = "^[0-9]{10,15}$", message = "Phone number must contain only digits")
     @Column(nullable = true, unique = true)
     private String phonenum;
-	
-	
-	@Column()
-	private String state;
 
-	@Column(nullable = true)
-	private String password;
+    @Column()
+    private String state;
 
-	@Email
-	@Column(nullable = false, unique = true)
-	private String email;
+    @Column(nullable = true)
+    private String password;
 
-	@Column(nullable = true)
-	private String role;
+    @Email
+    @Column(nullable = false, unique = true)
+    private String email;
 
-	@Column(nullable = true)
-	private boolean enabled = false;
+    @Column(nullable = true)
+    private String role;
 
-	private String otp;
-	private LocalDateTime otpExpiry;
+    @Column(nullable = true)
+    private boolean enabled = false;
 
-	private String bio;
-	private String timezone;
-	private String availability;
+    private String otp;
+    private LocalDateTime otpExpiry;
+    private String bio;
+    private String timezone;
+    private String availability;
 
-	@Column(name = "created_at")
-	private LocalDateTime createdAt = LocalDateTime.now();
+    @Column(name = "created_at")
+    private LocalDateTime createdAt = LocalDateTime.now();
 
+    // Premium subscription relationship
+    @OneToOne
+    @JoinColumn(name = "premium_id")
+    private Premium premium;
 
+    // Constructors
+    public User() {}
 
-	
+    public User(String username, String name, String email) {
+        this.username = username;
+        this.name = name;
+        this.email = email;
+    }
 
-	public List<Course> getPurchasedCourses() {
-		return purchasedCourses;
-	}
+    // Getters and Setters
+    public Long getId() {
+        return id;
+    }
 
-	public void setPurchasedCourses(List<Course> purchasedCourses) {
-		this.purchasedCourses = purchasedCourses;
-	}
+    public void setId(Long id) {
+        this.id = id;
+    }
 
-	public User(Long id, String username, String name, String profileurl, List<Course> purchasedCourses,
-			@Size(min = 10, max = 15, message = "Phone number must be between 10 to 15 digits") @Pattern(regexp = "^[0-9]{10,15}$", message = "Phone number must contain only digits") String phonenum,
-			String state, String password, @Email String email, String role, boolean enabled, String otp,
-			LocalDateTime otpExpiry, String bio, String timezone, String availability, LocalDateTime createdAt) {
-		super();
-		this.id = id;
-		this.username = username;
-		this.name = name;
-		this.profileurl = profileurl;
-		this.purchasedCourses = purchasedCourses;
-		this.phonenum = phonenum;
-		this.state = state;
-		this.password = password;
-		this.email = email;
-		this.role = role;
-		this.enabled = enabled;
-		this.otp = otp;
-		this.otpExpiry = otpExpiry;
-		this.bio = bio;
-		this.timezone = timezone;
-		this.availability = availability;
-		this.createdAt = createdAt;
-	}
+    public String getUsername() {
+        return username;
+    }
 
-	public String getName() {
-		return name;
-	}
+    public void setUsername(String username) {
+        this.username = username;
+    }
 
-	public void setName(String name) {
-		this.name = name;
-	}
+    public String getName() {
+        return name;
+    }
 
-	public String getProfileurl() {
-		return profileurl;
-	}
+    public void setName(String name) {
+        this.name = name;
+    }
 
-	public void setProfileurl(String profileurl) {
-		this.profileurl = profileurl;
-	}
+    public String getProfileurl() {
+        return profileurl;
+    }
 
-	public String getPhonenum() {
-		return phonenum;
-	}
+    public void setProfileurl(String profileurl) {
+        this.profileurl = profileurl;
+    }
 
-	public void setPhonenum(String phonenum) {
-		this.phonenum = phonenum;
-	}
+    public String getPhonenum() {
+        return phonenum;
+    }
 
-	public String getState() {
-		return state;
-	}
+    public void setPhonenum(String phonenum) {
+        this.phonenum = phonenum;
+    }
 
-	public void setState(String state) {
-		this.state = state;
-	}
+    public String getState() {
+        return state;
+    }
 
-	public User() {
+    public void setState(String state) {
+        this.state = state;
+    }
 
-	}
+    public String getPassword() {
+        return password;
+    }
 
-	public Long getId() {
-		return id;
-	}
+    public void setPassword(String password) {
+        this.password = password;
+    }
 
-	public void setId(Long id) {
-		this.id = id;
-	}
+    public String getEmail() {
+        return email;
+    }
 
-	public String getUsername() {
-		return username;
-	}
+    public void setEmail(String email) {
+        this.email = email;
+    }
 
-	public void setUsername(String username) {
-		this.username = username;
-	}
+    public String getRole() {
+        return role;
+    }
 
-	public String getPassword() {
-		return password;
-	}
+    public void setRole(String role) {
+        this.role = role;
+    }
 
-	public void setPassword(String password) {
-		this.password = password;
-	}
+    public boolean isEnabled() {
+        return enabled;
+    }
 
-	public String getEmail() {
-		return email;
-	}
+    public void setEnabled(boolean enabled) {
+        this.enabled = enabled;
+    }
 
-	public void setEmail(String email) {
-		this.email = email;
-	}
+    public String getOtp() {
+        return otp;
+    }
 
-	public String getRole() {
-		return role;
-	}
+    public void setOtp(String otp) {
+        this.otp = otp;
+    }
 
-	public void setRole(String role) {
-		this.role = role;
-	}
+    public LocalDateTime getOtpExpiry() {
+        return otpExpiry;
+    }
 
-	public boolean isEnabled() {
-		return enabled;
-	}
+    public void setOtpExpiry(LocalDateTime otpExpiry) {
+        this.otpExpiry = otpExpiry;
+    }
 
-	public void setEnabled(boolean enabled) {
-		this.enabled = enabled;
-	}
+    public String getBio() {
+        return bio;
+    }
 
-	public String getOtp() {
-		return otp;
-	}
+    public void setBio(String bio) {
+        this.bio = bio;
+    }
 
-	public void setOtp(String otp) {
-		this.otp = otp;
-	}
+    public String getTimezone() {
+        return timezone;
+    }
 
-	public LocalDateTime getOtpExpiry() {
-		return otpExpiry;
-	}
+    public void setTimezone(String timezone) {
+        this.timezone = timezone;
+    }
 
-	public void setOtpExpiry(LocalDateTime otpExpiry) {
-		this.otpExpiry = otpExpiry;
-	}
+    public String getAvailability() {
+        return availability;
+    }
 
-	public Collection<? extends GrantedAuthority> getAuthorities() {
+    public void setAvailability(String availability) {
+        this.availability = availability;
+    }
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public Premium getPremium() {
+        return premium;
+    }
+
+    public void setPremium(Premium premium) {
+        this.premium = premium;
+    }
+
+    // Helper method to check if user has active premium
+    public boolean hasPremium() {
+        return premium != null && premium.isActive();
+    }
+    public Collection<? extends GrantedAuthority> getAuthorities() {
 		return Collections.singletonList(new SimpleGrantedAuthority("ROLE_" + role));
-	}
-
-	public String getBio() {
-		return bio;
-	}
-
-	public void setBio(String bio) {
-		this.bio = bio;
-	}
-
-	public String getTimezone() {
-		return timezone;
-	}
-
-	public void setTimezone(String timezone) {
-		this.timezone = timezone;
-	}
-
-	public String getAvailability() {
-		return availability;
-	}
-
-	public void setAvailability(String availability) {
-		this.availability = availability;
-	}
-
-	public LocalDateTime getCreatedAt() {
-		return createdAt;
-	}
-
-	public void setCreatedAt(LocalDateTime createdAt) {
-		this.createdAt = createdAt;
 	}
 }

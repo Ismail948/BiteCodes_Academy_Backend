@@ -1,8 +1,6 @@
 package academy.controllers;
 
-
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -33,6 +31,7 @@ import academy.services.CustomUserDetailsService;
 import academy.services.EmailService;
 import academy.services.JwtService;
 import academy.services.OtpService;
+import academy.services.PremiumService;
 import academy.services.RegistrationService;
 
 @RestController
@@ -46,6 +45,7 @@ public class AuthController {
     private final CustomUserDetailsService userDetailsService;
     private final EmailService emailService;
     private final OtpService otpService;
+    private final PremiumService premiumService;
 
     @Autowired
     public AuthController(
@@ -55,7 +55,8 @@ public class AuthController {
             EmailService emailService,
             AuthenticationManager authenticationManager,
             OtpService otpService,
-            CustomUserDetailsService userDetailsService) {
+            CustomUserDetailsService userDetailsService,
+            PremiumService premiumService) {
         this.registrationService = registrationService;
         this.userRepository = userRepository;
         this.jwtService = jwtService;
@@ -63,173 +64,116 @@ public class AuthController {
         this.userDetailsService = userDetailsService;
         this.emailService = emailService;
         this.otpService = otpService;
+        this.premiumService = premiumService;
     }
 
-    
-
-        @PutMapping("/update/{id}")
-        public ResponseEntity<?> updateUser(@PathVariable String id, @RequestBody UserUpdateDTO updatedUser) {
+    @PutMapping("/update/{id}")
+    public ResponseEntity<?> updateUser(@PathVariable String id, @RequestBody UserUpdateDTO updatedUser) {
+        try {
+            Long parsedId;
             try {
-                Long parsedId;
-                try {
-                    parsedId = Long.valueOf(id);
-                } catch (NumberFormatException e) {
-                    return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                            .body(new ApiResponse(false, "Invalid user ID: " + id));
-                }
-                User existingUser = userRepository.findById(parsedId)
-                        .orElseThrow(() -> new UsernameNotFoundException("User not found with ID: " + parsedId));
-
-                // Update basic fields
-                if (updatedUser.getUsername() != null) existingUser.setUsername(updatedUser.getUsername());
-                if (updatedUser.getName() != null) existingUser.setName(updatedUser.getName());
-                if (updatedUser.getProfileurl() != null) existingUser.setProfileurl(updatedUser.getProfileurl());
-                if (updatedUser.getPhonenum() != null) existingUser.setPhonenum(updatedUser.getPhonenum());
-                if (updatedUser.getState() != null) existingUser.setState(updatedUser.getState());
-                if (updatedUser.getPassword() != null) existingUser.setPassword(updatedUser.getPassword());
-                if (updatedUser.getBio() != null) existingUser.setBio(updatedUser.getBio());
-                if (updatedUser.getRole() != null) existingUser.setRole(updatedUser.getRole());
-                if (updatedUser.getTimezone() != null) existingUser.setTimezone(updatedUser.getTimezone());
-                if (updatedUser.getAvailability() != null) existingUser.setAvailability(updatedUser.getAvailability());
-
-
-                userRepository.save(existingUser);
-                return ResponseEntity.ok(new ApiResponse(true, "User updated successfully."));
-            } catch (UsernameNotFoundException e) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                        .body(new ApiResponse(false, e.getMessage()));
-            } catch (Exception e) {
-                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                        .body(new ApiResponse(false, "Update failed: " + e.getMessage()));
-            }
-        }
-    
-
-    
-
-//    @PostMapping("/google-auth")
-//    public ResponseEntity<?> googleAuth(@RequestBody Map<String, String> request) {
-//        try {
-//            String email = request.get("email");
-//            String name = request.get("name");
-//            String picture = request.get("picture");
-//            String password = "Google";
-//            String username = name;
-//
-//            if (email == null) {
-//                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-//                        .body(Map.of("success", false, "message", "Google OAuth failed: Email is missing."));
-//            }
-//
-//            Optional<User> existingUser = userRepository.findByEmail(email);
-//            User user;
-//
-//            if (existingUser.isPresent()) {
-//                user = existingUser.get();
-//            } else {
-//                user = new User();
-//                user.setEmail(email);
-//                user.setName(name != null ? name : "Google User");
-//                user.setProfileurl(picture != null ? picture : "https://webcrumbs.cloud/placeholder");
-//                user.setUsername(email.split("@")[0]);
-//                user.setPassword(password);
-//                user.setRole("USER");
-//                user.setEnabled(true);
-//                userRepository.save(user);
-//            }
-//
-//            String jwtToken = jwtService.generateToken(user.getEmail(), user.getId());
-//            return ResponseEntity.ok(Map.of(
-//                    "success", true,
-//                    "message", "Google login successful",
-//                    "token", jwtToken,
-//                    "username", user.getUsername(),
-//                    "email", user.getEmail(),
-//                    "profileurl", user.getProfileurl(),
-//                    "userid", user.getId(),
-//                    "name", user.getName(),
-//                    "role",user.getRole()
-//            ));
-//        } catch (Exception e) {
-//            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-//                    .body(Map.of("success", false, "message", "Google OAuth failed: " + e.getMessage()));
-//        }
-//    }
-
-        @PostMapping("/google-auth")
-        public ResponseEntity<?> googleAuth(@RequestBody Map<String, String> request) {
-            try {
-                String email = request.get("email");
-                String name = request.get("name");
-                String picture = request.get("picture");
-                String password = "Google";
-
-                if (email == null) {
-                    return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                            .body(Map.of("success", false, "message", "Google OAuth failed: Email is missing."));
-                }
-
-                Optional<User> existingUser = userRepository.findByEmail(email);
-                User user;
-
-                if (existingUser.isPresent()) {
-                    user = existingUser.get();
-                } else {
-                    user = new User();
-                    user.setEmail(email);
-                    user.setName(name != null ? name : "Google User");
-                    user.setProfileurl(picture != null ? picture : "https://webcrumbs.cloud/placeholder");
-                    user.setUsername(email.split("@")[0]);
-                    user.setPassword(password);
-                    user.setRole("USER");
-                    user.setEnabled(true);
-                    userRepository.save(user);
-                }
-
-                // 🔹 Get purchased courses (safe for Java 8+)
-                List<Map<String, Object>> purchasedCourses = new ArrayList<>();
-                if (user.getPurchasedCourses() != null) {
-                    purchasedCourses = user.getPurchasedCourses().stream()
-                        .map(course -> {
-                            Map<String, Object> map = new HashMap<>();
-                            map.put("name", course.getName());
-                            map.put("slug", course.getExamSlug());
-                            map.put("price", course.getPrice());
-                            return map;
-                        })
-                        .collect(Collectors.toList());
-                }
-
-                String jwtToken = jwtService.generateToken(user.getEmail(), user.getId());
-                return ResponseEntity.ok(Map.of(
-                        "success", true,
-                        "message", "Google login successful",
-                        "token", jwtToken,
-                        "username", user.getUsername(),
-                        "email", user.getEmail(),
-                        "profileurl", user.getProfileurl(),
-                        "userid", user.getId(),
-                        "name", user.getName(),
-                        "role", user.getRole(),
-                        "purchasedCourses", purchasedCourses
-                ));
-            } catch (Exception e) {
+                parsedId = Long.valueOf(id);
+            } catch (NumberFormatException e) {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                        .body(Map.of("success", false, "message", "Google OAuth failed: " + e.getMessage()));
+                        .body(new ApiResponse(false, "Invalid user ID: " + id));
             }
-        }
+            
+            User existingUser = userRepository.findById(parsedId)
+                    .orElseThrow(() -> new UsernameNotFoundException("User not found with ID: " + parsedId));
 
-        
+            // Update basic fields
+            if (updatedUser.getUsername() != null) existingUser.setUsername(updatedUser.getUsername());
+            if (updatedUser.getName() != null) existingUser.setName(updatedUser.getName());
+            if (updatedUser.getProfileurl() != null) existingUser.setProfileurl(updatedUser.getProfileurl());
+            if (updatedUser.getPhonenum() != null) existingUser.setPhonenum(updatedUser.getPhonenum());
+            if (updatedUser.getState() != null) existingUser.setState(updatedUser.getState());
+            if (updatedUser.getPassword() != null) existingUser.setPassword(updatedUser.getPassword());
+            if (updatedUser.getBio() != null) existingUser.setBio(updatedUser.getBio());
+            if (updatedUser.getRole() != null) existingUser.setRole(updatedUser.getRole());
+            if (updatedUser.getTimezone() != null) existingUser.setTimezone(updatedUser.getTimezone());
+            if (updatedUser.getAvailability() != null) existingUser.setAvailability(updatedUser.getAvailability());
+
+            userRepository.save(existingUser);
+            return ResponseEntity.ok(new ApiResponse(true, "User updated successfully."));
+        } catch (UsernameNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(new ApiResponse(false, e.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse(false, "Update failed: " + e.getMessage()));
+        }
+    }
+
+    @PostMapping("/google-auth")
+    public ResponseEntity<Map<String, Object>> googleAuth(@RequestBody Map<String, String> request) {
+        try {
+            String email = request.get("email");
+            String name = request.get("name");
+            String picture = request.get("picture");
+            String password = "Google";
+
+            if (email == null) {
+                Map<String, Object> errorResponse = new HashMap<>();
+                errorResponse.put("success", false);
+                errorResponse.put("message", "Google OAuth failed: Email is missing.");
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+            }
+
+            Optional<User> existingUser = userRepository.findByEmail(email);
+            User user;
+
+            if (existingUser.isPresent()) {
+                user = existingUser.get();
+            } else {
+                user = new User();
+                user.setEmail(email);
+                user.setName(name != null ? name : "Google User");
+                user.setProfileurl(picture != null ? picture : "https://webcrumbs.cloud/placeholder");
+                user.setUsername(email.split("@")[0]);
+                user.setPassword(password);
+                user.setRole("USER");
+                user.setEnabled(true);
+                userRepository.save(user);
+            }
+
+            // Get premium status for the user
+            Map<String, Object> premiumStatus = premiumService.getPremiumStatus(user.getId());
+            
+            String jwtToken = jwtService.generateToken(user.getEmail(), user.getId());
+            
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("message", "Google login successful");
+            response.put("token", jwtToken);
+            response.put("username", user.getUsername());
+            response.put("email", user.getEmail());
+            response.put("profileurl", user.getProfileurl());
+            response.put("userid", user.getId());
+            response.put("name", user.getName());
+            response.put("role", user.getRole());
+            response.put("premiumStatus", premiumStatus);
+            
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("success", false);
+            errorResponse.put("message", "Google OAuth failed: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+        }
+    }
+
     @PostMapping("/register")
     public ResponseEntity<String> registerUser(@RequestBody User user) {
         try {
             if (!registrationService.validUser(user)) {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Registration failed: Email or Username Already Exist");
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body("Registration failed: Email or Username Already Exist");
             }
             registrationService.registerUser(user);
             return ResponseEntity.ok("User registered. Check your email for OTP.");
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Registration failed: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body("Registration failed: " + e.getMessage());
         }
     }
 
@@ -260,24 +204,51 @@ public class AuthController {
     }
 
     @GetMapping("/user/{id}")
-    public ResponseEntity<?> getUser(@PathVariable String id) {
+    public ResponseEntity<Map<String, Object>> getUser(@PathVariable String id) {
         try {
             Long parsedId;
             try {
                 parsedId = Long.valueOf(id);
             } catch (NumberFormatException e) {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                        .body(new ApiResponse(false, "Invalid user ID: " + id));
+                Map<String, Object> errorResponse = new HashMap<>();
+                errorResponse.put("success", false);
+                errorResponse.put("message", "Invalid user ID: " + id);
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
             }
+            
             User user = userRepository.findById(parsedId)
                     .orElseThrow(() -> new UsernameNotFoundException("User not found with Id: " + parsedId));
-            return ResponseEntity.ok(user);
+            
+            // Get premium status and include it in response
+            Map<String, Object> premiumStatus = premiumService.getPremiumStatus(parsedId);
+            
+            Map<String, Object> userResponse = new HashMap<>();
+            userResponse.put("id", user.getId());
+            userResponse.put("username", user.getUsername() != null ? user.getUsername() : "");
+            userResponse.put("name", user.getName() != null ? user.getName() : "");
+            userResponse.put("email", user.getEmail());
+            userResponse.put("profileurl", user.getProfileurl() != null ? user.getProfileurl() : "");
+            userResponse.put("phonenum", user.getPhonenum() != null ? user.getPhonenum() : "");
+            userResponse.put("state", user.getState() != null ? user.getState() : "");
+            userResponse.put("bio", user.getBio() != null ? user.getBio() : "");
+            userResponse.put("role", user.getRole() != null ? user.getRole() : "");
+            userResponse.put("timezone", user.getTimezone() != null ? user.getTimezone() : "");
+            userResponse.put("availability", user.getAvailability() != null ? user.getAvailability() : "");
+            userResponse.put("enabled", user.isEnabled());
+            userResponse.put("createdAt", user.getCreatedAt());
+            userResponse.put("premiumStatus", premiumStatus);
+            
+            return ResponseEntity.ok(userResponse);
         } catch (UsernameNotFoundException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(new ApiResponse(false, e.getMessage()));
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("success", false);
+            errorResponse.put("message", e.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(new ApiResponse(false, "Failed to fetch user: " + e.getMessage()));
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("success", false);
+            errorResponse.put("message", "Failed to fetch user: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
         }
     }
 
@@ -291,8 +262,10 @@ public class AuthController {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                         .body(new ApiResponse(false, "Invalid user ID: " + id));
             }
+            
             User user = userRepository.findById(parsedId)
                     .orElseThrow(() -> new UsernameNotFoundException("User not found with Id: " + parsedId));
+            
             return ResponseEntity.ok(user.getUsername());
         } catch (UsernameNotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
@@ -304,7 +277,7 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest) {
+    public ResponseEntity<Map<String, Object>> login(@RequestBody LoginRequest loginRequest) {
         String email = loginRequest.getEmail();
         String password = loginRequest.getPassword();
 
@@ -320,33 +293,79 @@ public class AuthController {
                 Long userid = (user.getId() != null) ? user.getId() : 0;
                 String profileurl = (user.getProfileurl() != null) ? user.getProfileurl() : "";
                 String name = (user.getName() != null) ? user.getName() : "";
-                LoginResponse response = new LoginResponse(true, token, username, email, phonenum, state, userid, profileurl, name);
-                return ResponseEntity.ok(response);
+                
+                // Get premium status
+                Map<String, Object> premiumStatus = premiumService.getPremiumStatus(user.getId());
+                
+                // Enhanced login response with premium status
+                Map<String, Object> loginResponse = new HashMap<>();
+                loginResponse.put("success", true);
+                loginResponse.put("token", token);
+                loginResponse.put("username", username);
+                loginResponse.put("email", email);
+                loginResponse.put("phonenum", phonenum);
+                loginResponse.put("state", state);
+                loginResponse.put("userid", userid);
+                loginResponse.put("profileurl", profileurl);
+                loginResponse.put("name", name);
+                loginResponse.put("role", user.getRole() != null ? user.getRole() : "USER");
+                loginResponse.put("premiumStatus", premiumStatus);
+                
+                return ResponseEntity.ok(loginResponse);
             }
 
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(new ApiResponse(false, "Invalid email or password."));
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("success", false);
+            errorResponse.put("message", "Invalid email or password.");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorResponse);
+            
         } catch (UsernameNotFoundException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(new ApiResponse(false, e.getMessage()));
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("success", false);
+            errorResponse.put("message", e.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(new ApiResponse(false, "Login failed: " + e.getMessage()));
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("success", false);
+            errorResponse.put("message", "Login failed: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
         }
     }
 
     @GetMapping("/users")
-    public ResponseEntity<?> getAllUsers() {
+    public ResponseEntity<List<Map<String, Object>>> getAllUsers() {
         try {
             List<User> users = userRepository.findAll();
-            return ResponseEntity.ok(users);
+            
+            // Enhance user data with premium status for admin views
+            List<Map<String, Object>> enhancedUsers = users.stream().map(user -> {
+                Map<String, Object> premiumStatus = premiumService.getPremiumStatus(user.getId());
+                
+                Map<String, Object> userMap = new HashMap<>();
+                userMap.put("id", user.getId());
+                userMap.put("username", user.getUsername() != null ? user.getUsername() : "");
+                userMap.put("name", user.getName() != null ? user.getName() : "");
+                userMap.put("email", user.getEmail());
+                userMap.put("profileurl", user.getProfileurl() != null ? user.getProfileurl() : "");
+                userMap.put("phonenum", user.getPhonenum() != null ? user.getPhonenum() : "");
+                userMap.put("state", user.getState() != null ? user.getState() : "");
+                userMap.put("role", user.getRole() != null ? user.getRole() : "");
+                userMap.put("enabled", user.isEnabled());
+                userMap.put("createdAt", user.getCreatedAt());
+                userMap.put("premiumStatus", premiumStatus);
+                
+                return userMap;
+            }).collect(Collectors.toList());
+            
+            return ResponseEntity.ok(enhancedUsers);
         } catch (Exception e) {
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("success", false);
+            errorResponse.put("message", "Failed to fetch users: " + e.getMessage());
+            
+            // Return error in same format but as single item list for consistency
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(new ApiResponse(false, "Failed to fetch users: " + e.getMessage()));
+                    .body(List.of(errorResponse));
         }
     }
-
-    
-    
-
 }

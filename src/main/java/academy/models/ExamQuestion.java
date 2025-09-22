@@ -15,28 +15,23 @@ public class ExamQuestion {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
     private String courseName; // Links the question to a course
 
-    @Column(nullable = false, columnDefinition = "TEXT")
+    @Column(columnDefinition = "TEXT")
     private String questionText;
 
-    @Column(nullable = false)
     private String optionA;
 
-    @Column(nullable = false)
     private String optionB;
 
-    @Column(nullable = false)
     private String optionC;
 
-    @Column(nullable = false)
     private String optionD;
 
-    @Column(nullable = false)
     private String correctOption; // Stores 'A', 'B', 'C', or 'D'
     
-    @Column(nullable = false)
+    private String difficulty;
+    
     private String topic; // Stores 'A', 'B', 'C', or 'D'
 
     private LocalDateTime createdAt = LocalDateTime.now();
@@ -118,9 +113,8 @@ public class ExamQuestion {
 	
 
 	public ExamQuestion(Long id, String courseName, String questionText, String optionA, String optionB, String optionC,
-			String optionD, String correctOption, LocalDateTime createdAt,String topic) {
+			String optionD, String correctOption, String difficulty, String topic, LocalDateTime createdAt) {
 		super();
-		this.topic=topic;
 		this.id = id;
 		this.courseName = courseName;
 		this.questionText = questionText;
@@ -129,7 +123,17 @@ public class ExamQuestion {
 		this.optionC = optionC;
 		this.optionD = optionD;
 		this.correctOption = correctOption;
+		this.difficulty = difficulty;
+		this.topic = topic;
 		this.createdAt = createdAt;
+	}
+
+	public String getDifficulty() {
+		return difficulty;
+	}
+
+	public void setDifficulty(String difficulty) {
+		this.difficulty = difficulty;
 	}
 
 	public String getCourseName() {

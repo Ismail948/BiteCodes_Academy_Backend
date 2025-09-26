@@ -4,7 +4,9 @@ package academy.controllers;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -33,6 +35,8 @@ public class PremiumController {
         this.couponService = couponService;
     }
 
+    
+    
     @GetMapping("/status/{userId}")
     public ResponseEntity<Map<String, Object>> getPremiumStatus(@PathVariable Long userId) {
         try {
@@ -43,7 +47,25 @@ public class PremiumController {
                     .body(Map.of("error", "Failed to get premium status: " + e.getMessage()));
         }
     }
-
+    @GetMapping("/invoice/{transactionId}")
+    public ResponseEntity<?> downloadInvoice(@PathVariable String transactionId) {
+        try {
+            byte[] invoicePdf = premiumService.generateInvoice(transactionId);
+            
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_PDF);
+            headers.setContentDispositionFormData("attachment", "invoice-" + transactionId + ".pdf");
+            headers.setContentLength(invoicePdf.length);
+            
+            return ResponseEntity.ok()
+                    .headers(headers)
+                    .body(invoicePdf);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest()
+                    .body(Map.of("error", "Failed to generate invoice: " + e.getMessage()));
+        }
+    }
+    
     @GetMapping("/pricing")
     public ResponseEntity<Map<String, Object>> getPremiumPricing() {
         Map<String, Object> pricing = premiumService.getPremiumPricing();

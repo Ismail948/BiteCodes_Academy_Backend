@@ -16,4 +16,6 @@ public interface PurchaseRepo extends JpaRepository<Purchase, Long> {
     List<Purchase> findByUserOrderByPurchaseDateDesc(User user);
     List<Purchase> findByPurchaseStatus(PurchaseStatus status);
     List<Purchase> findByUserAndPurchaseStatus(User user, PurchaseStatus status);
+    
+    
 }

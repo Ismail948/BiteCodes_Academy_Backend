@@ -2,6 +2,7 @@
 package academy.services;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -13,6 +14,16 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.itextpdf.io.font.constants.StandardFonts;
+import com.itextpdf.io.source.ByteArrayOutputStream;
+import com.itextpdf.kernel.font.PdfFont;
+import com.itextpdf.kernel.font.PdfFontFactory;
+import com.itextpdf.kernel.pdf.PdfDocument;
+import com.itextpdf.kernel.pdf.PdfWriter;
+import com.itextpdf.layout.Document;
+import com.itextpdf.layout.element.Paragraph;
+import com.itextpdf.layout.element.Text;
+import com.itextpdf.layout.properties.TextAlignment;
 import com.razorpay.Order;
 import com.razorpay.RazorpayClient;
 
@@ -67,6 +78,104 @@ public class PremiumService {
         this.couponUsageRepository = couponUsageRepository;
         this.paymentService = paymentService;
         this.couponService = couponService;
+    }
+    
+    public byte[] generateInvoice(String transactionId) throws Exception {
+        Purchase purchase = purchaseRepository.findByTransactionId(transactionId);
+        
+        if (purchase == null) {
+            throw new RuntimeException("Transaction not found: " + transactionId);
+        }
+        
+        if (purchase.getPurchaseStatus() != PurchaseStatus.COMPLETED) {
+            throw new RuntimeException("Invoice only available for completed transactions");
+        }
+        
+        return generatePdfInvoice(purchase);
+    }
+
+    private byte[] generatePdfInvoice(Purchase purchase) {
+        try {
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            PdfDocument pdfDoc = new PdfDocument(new PdfWriter(baos));
+            Document document = new Document(pdfDoc);
+            
+            // Create bold font
+            PdfFont boldFont = PdfFontFactory.createFont(StandardFonts.HELVETICA_BOLD);
+            PdfFont regularFont = PdfFontFactory.createFont(StandardFonts.HELVETICA);
+            
+            // Add company header
+            document.add(new Paragraph(new Text("BITECODES ACADEMY")
+                .setFont(boldFont)
+                .setFontSize(20))
+                .setTextAlignment(TextAlignment.CENTER));
+            
+            document.add(new Paragraph("Premium Subscription Invoice")
+                .setFontSize(16)
+                .setTextAlignment(TextAlignment.CENTER)
+                .setMarginBottom(20));
+            
+            // Invoice details
+            document.add(new Paragraph(new Text("Invoice Details:")
+                .setFont(boldFont)
+                .setFontSize(14)));
+            
+            document.add(new Paragraph("Transaction ID: " + purchase.getTransactionId()));
+            document.add(new Paragraph("Date: " + purchase.getPurchaseDate().format(DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm"))));
+            document.add(new Paragraph("Customer: " + purchase.getUser().getName()));
+            document.add(new Paragraph("Email: " + purchase.getUser().getEmail()));
+            
+            // Plan details
+            document.add(new Paragraph(new Text("\nSubscription Details:")
+                .setFont(boldFont)
+                .setFontSize(14))
+                .setMarginTop(20));
+            
+            document.add(new Paragraph("Plan: " + getPlanDisplayName(purchase.getSubscriptionType())));
+            document.add(new Paragraph("Original Amount: ₹" + purchase.getOriginalAmount()));
+            
+            if (purchase.getDiscountAmount() > 0) {
+                document.add(new Paragraph("Discount: -₹" + purchase.getDiscountAmount()));
+                if (purchase.getCouponCode() != null) {
+                    document.add(new Paragraph("Coupon: " + purchase.getCouponCode()));
+                }
+            }
+            
+            document.add(new Paragraph(new Text("Final Amount: ₹" + purchase.getFinalAmount())
+                .setFont(boldFont)
+                .setFontSize(16)));
+            
+            // Payment details
+            document.add(new Paragraph(new Text("\nPayment Details:")
+                .setFont(boldFont)
+                .setFontSize(14))
+                .setMarginTop(20));
+            
+            document.add(new Paragraph("Payment Method: " + purchase.getPaymentMethod()));
+            document.add(new Paragraph("Payment ID: " + purchase.getPaymentId()));
+            document.add(new Paragraph("Status: " + purchase.getPurchaseStatus()));
+            
+            // Footer
+            document.add(new Paragraph("\nThank you for choosing Bitecodes Academy!")
+                .setTextAlignment(TextAlignment.CENTER)
+                .setMarginTop(30));
+            
+            document.close();
+            return baos.toByteArray();
+            
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to generate PDF: " + e.getMessage());
+        }
+    }
+    private String getPlanDisplayName(SubscriptionType type) {
+        switch (type) {
+            case MONTHLY: return "1 Month Plan";
+            case QUARTERLY: return "3 Months Plan";
+            case HALF_YEARLY: return "6 Months Plan";
+            case YEARLY: return "1 Year Plan";
+            case LIFETIME: return "Lifetime Plan";
+            default: return type.toString();
+        }
     }
 
     @Cacheable(value = "premiumStatusCache", key = "#userId")

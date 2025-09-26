@@ -2,6 +2,8 @@ package academy.models;
 
 import java.time.LocalDateTime;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -21,9 +23,13 @@ public class Premium {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     
+//    @OneToOne
+//    @JoinColumn(name = "user_id", unique = true)
     @OneToOne
     @JoinColumn(name = "user_id", unique = true)
+    @JsonIgnore  // Add this annotation
     private User user;
+//    private User user;
     
     @Column(name = "start_date", nullable = false)
     private LocalDateTime startDate;
